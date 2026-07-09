@@ -25,7 +25,9 @@ import {
   Brain, 
   Clock, 
   ToggleLeft, 
-  ToggleRight 
+  ToggleRight,
+  Menu,
+  X
 } from "lucide-react";
 import { 
   ResponsiveContainer, 
@@ -61,6 +63,7 @@ const MONTHS = [
 export default function App() {
   // Navigation
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Input fields
   const [rainfall, setRainfall] = useState(180);
@@ -423,9 +426,32 @@ Provide detailed farm advisory in JSON. Format precisely:
         <div className="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] rounded-full bg-green-100/40 blur-3xl animate-pulse-soft" style={{ animationDelay: '2s' }}></div>
       </div>
 
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-xs"
+          />
+        )}
+      </AnimatePresence>
+
       {/* LEFT SIDEBAR */}
-      <aside className="w-64 bg-[#1B5E20] text-emerald-50 flex flex-col justify-between p-6 z-10 shadow-xl border-r border-emerald-800">
+      <aside className={`fixed inset-y-0 left-0 w-64 bg-[#1B5E20] text-emerald-50 flex flex-col justify-between p-6 z-50 shadow-xl border-r border-emerald-800 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div>
+          {/* Close button for mobile sidebar */}
+          <div className="lg:hidden flex justify-end mb-2">
+            <button 
+              onClick={() => setIsSidebarOpen(false)} 
+              className="p-1.5 rounded-lg hover:bg-white/10 text-emerald-200 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
           {/* Logo & App Brand */}
           <div className="flex items-center space-x-3 mb-10 mt-2">
             <div className="bg-emerald-500 p-2.5 rounded-xl shadow-inner flex items-center justify-center">
@@ -452,7 +478,10 @@ Provide detailed farm advisory in JSON. Format precisely:
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setIsSidebarOpen(false);
+                  }}
                   className={`w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive 
                       ? "bg-white/10 text-white font-medium shadow-md border-l-4 border-emerald-400" 
@@ -485,9 +514,15 @@ Provide detailed farm advisory in JSON. Format precisely:
       <main className="flex-1 flex flex-col min-w-0 z-10 bg-bgLight">
         
         {/* TOP NAVBAR */}
-        <header className="h-20 bg-white border-b border-gray-200/80 flex items-center justify-between px-8 shadow-sm">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-heading font-extrabold text-gray-900 tracking-tight">
+        <header className="h-20 bg-white border-b border-gray-200/80 flex items-center justify-between px-4 sm:px-6 lg:px-8 shadow-sm">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <h1 className="text-lg sm:text-2xl font-heading font-extrabold text-gray-900 tracking-tight">
               {activeTab === "dashboard" && "Climate Dashboard"}
               {activeTab === "analysis" && "Risk & Analysis Report"}
               {activeTab === "advisory" && "AI Crop Advisory & Insights"}
@@ -495,7 +530,7 @@ Provide detailed farm advisory in JSON. Format precisely:
               {activeTab === "history" && "Historical Logs & Runs"}
               {activeTab === "settings" && "Integration Settings"}
             </h1>
-            <div className="flex items-center space-x-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold border border-emerald-100 shadow-sm">
+            <div className="hidden sm:flex items-center space-x-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold border border-emerald-100 shadow-sm">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -504,19 +539,19 @@ Provide detailed farm advisory in JSON. Format precisely:
             </div>
           </div>
 
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-3 sm:space-x-6">
             {/* GPS Detection Quick button */}
             <button
               onClick={detectLocation}
               disabled={locLoading}
-              className="flex items-center space-x-2 bg-gray-50 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 transition-all duration-150"
+              className="flex items-center space-x-1.5 sm:space-x-2 bg-gray-50 hover:bg-gray-100 text-gray-700 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border border-gray-200 transition-all duration-150 max-w-[120px] sm:max-w-none truncate"
             >
-              <MapPin className={`w-4 h-4 text-emerald-600 ${locLoading ? 'animate-bounce' : ''}`} />
-              <span>{location.name || "Detect Location"}</span>
+              <MapPin className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0 ${locLoading ? 'animate-bounce' : ''}`} />
+              <span className="truncate">{location.name || "Detect Location"}</span>
             </button>
 
             {/* Current Date */}
-            <div className="flex items-center space-x-2 text-sm text-gray-500 font-medium">
+            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500 font-medium">
               <Calendar className="w-4 h-4 text-gray-400" />
               <span>{new Date().toLocaleDateString("en-US", { weekday: 'short', month: 'short', day: 'numeric' })}</span>
             </div>
