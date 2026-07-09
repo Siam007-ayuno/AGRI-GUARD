@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Climate Risk & Crop Advisory — Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --mist:#E7EDE4;
+  --indigo:#1C3A45;
+  --gold:#D9A404;
+  --paddy:#4B7854;
+  --clay:#A63D2E;
+  --ink:#16232A;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  min-height:100vh;
+  background:#cfd8c9;
+  font-family:'Inter',sans-serif;
+  color:var(--ink);
+  display:flex;
+  justify-content:center;
+  padding:24px 16px;
+}
+.app{
+  width:100%;
+  max-width:760px;
+}
+.header{
+  background:var(--indigo);
+  color:var(--mist);
+  padding:26px 28px;
+  border-radius:8px 8px 0 0;
+}
+.eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  letter-spacing:0.1em;
+  color:var(--gold);
+}
+h1{
+  font-family:'Fraunces',serif;
+  font-weight:800;
+  font-size:clamp(20px,4vw,28px);
+  margin:8px 0 0;
+}
+.card{
+  background:var(--mist);
+  padding:24px 28px;
+  border-radius:0 0 8px 8px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.15);
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:6px;
+}
+label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:0.05em;
+  color:var(--paddy);
+  display:block;
+  margin-bottom:6px;
+}
+input, select{
+  width:100%;
+  padding:10px 10px;
+  border:1.5px solid #c3ccc0;
+  border-radius:5px;
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  background:#fff;
+  color:var(--ink);
+}
+input:focus, select:focus{
+  outline:2px solid var(--paddy);
+  border-color:var(--paddy);
+}
+button{
+  margin-top:20px;
+  width:100%;
+  padding:13px;
+  background:var(--indigo);
+  color:var(--mist);
+  border:none;
+  border-radius:6px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  letter-spacing:0.06em;
+  cursor:pointer;
+  transition:background 0.15s;
+}
+button:hover{background:#2a4d5a;}
+button:disabled{background:#8a9a95;cursor:not-allowed;}
+
+.status{
+  margin-top:14px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  color:var(--clay);
+  min-height:16px;
+}
+
+.results{
+  margin-top:26px;
+  display:none;
+}
+.results.visible{display:block;}
+
+.gauges{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.gauge-box{
+  background:#fff;
+  border-radius:8px;
+  padding:16px;
+  text-align:center;
+  border:1.5px solid #d8dfd4;
+}
+.gauge-box .kind{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:0.08em;
+  color:var(--paddy);
+  margin-bottom:8px;
+}
+.bar-track{
+  height:10px;
+  background:#e3e8de;
+  border-radius:6px;
+  overflow:hidden;
+  margin:10px 0 8px;
+}
+.bar-fill{
+  height:100%;
+  border-radius:6px;
+  transition:width 0.5s ease;
+}
+.gauge-box .score{
+  font-family:'Fraunces',serif;
+  font-weight:800;
+  font-size:26px;
+}
+.gauge-box .level{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  margin-top:2px;
+}
+.level.Low{color:var(--paddy);}
+.level.Medium{color:var(--gold);}
+.level.High{color:var(--clay);}
+
+.advisory{
+  margin-top:18px;
+  background:var(--indigo);
+  color:var(--mist);
+  padding:18px 20px;
+  border-radius:8px;
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:16px;
+  line-height:1.45;
+  border-left:5px solid var(--gold);
+}
+.advisory .label{
+  display:block;
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:400;
+  font-size:11px;
+  letter-spacing:0.08em;
+  color:var(--gold);
+  margin-bottom:8px;
+}
+.hint{
+  font-size:11px;
+  color:#6b7a74;
+  margin-top:16px;
+  font-family:'IBM Plex Mono',monospace;
+  line-height:1.5;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="eyebrow">WSDG 2026 · AI-POWERED CLIMATE RISK &amp; CROP ADVISORY</div>
+    <h1>Farmer Risk Dashboard</h1>
+  </div>
+
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label>RAINFALL — TRAILING 7 DAYS (MM)</label>
+        <input type="number" id="rainfall" value="180" step="1">
+      </div>
+      <div>
+        <label>RIVER LEVEL (M ABOVE BASELINE)</label>
+        <input type="number" id="river" value="3.2" step="0.1">
+      </div>
+      <div>
+        <label>TEMPERATURE (°C)</label>
+        <input type="number" id="temp" value="30" step="0.5">
+      </div>
+      <div>
+        <label>SOIL MOISTURE (%)</label>
+        <input type="number" id="soil" value="70" step="1">
+      </div>
+      <div style="grid-column:1 / -1;">
+        <label>MONTH</label>
+        <select id="month">
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+          <option value="5">May</option>
+          <option value="6">June</option>
+          <option value="7" selected>July</option>
+          <option value="8">August</option>
+          <option value="9">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="submitBtn" onclick="getRisk()">GET RISK ADVISORY</button>
+    <div class="status" id="status"></div>
+
+    <div class="results" id="results">
+      <div class="gauges">
+        <div class="gauge-box">
+          <div class="kind">FLOOD RISK</div>
+          <div class="bar-track"><div class="bar-fill" id="floodBar" style="background:var(--clay); width:0%;"></div></div>
+          <div class="score" id="floodScore">—</div>
+          <div class="level" id="floodLevel">—</div>
+        </div>
+        <div class="gauge-box">
+          <div class="kind">DROUGHT RISK</div>
+          <div class="bar-track"><div class="bar-fill" id="droughtBar" style="background:var(--gold); width:0%;"></div></div>
+          <div class="score" id="droughtScore">—</div>
+          <div class="level" id="droughtLevel">—</div>
+        </div>
+      </div>
+
+      <div class="advisory">
+        <span class="label">RECOMMENDED ACTION</span>
+        <span id="advisoryText">—</span>
+      </div>
+    </div>
+
+    <div class="hint">
+      This dashboard calls a local Flask API at http://127.0.0.1:5000/predict.<br>
+      Start it first: <code>cd api && python app.py</code> — then reload this page.
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = "http://127.0.0.1:5000/predict";
+
+async function getRisk() {
+  const btn = document.getElementById("submitBtn");
+  const status = document.getElementById("status");
+  const results = document.getElementById("results");
+
+  const payload = {
+    rainfall_7day_mm: parseFloat(document.getElementById("rainfall").value),
+    river_level_m: parseFloat(document.getElementById("river").value),
+    temperature_c: parseFloat(document.getElementById("temp").value),
+    soil_moisture_pct: parseFloat(document.getElementById("soil").value),
+    month: parseInt(document.getElementById("month").value),
+  };
+
+  btn.disabled = true;
+  btn.textContent = "CHECKING…";
+  status.textContent = "";
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Request failed");
+    }
+
+    const data = await res.json();
+
+    document.getElementById("floodScore").textContent = data.flood_risk_score.toFixed(1);
+    document.getElementById("floodLevel").textContent = data.flood_risk_level;
+    document.getElementById("floodLevel").className = "level " + data.flood_risk_level;
+    document.getElementById("floodBar").style.width = data.flood_risk_score + "%";
+
+    document.getElementById("droughtScore").textContent = data.drought_risk_score.toFixed(1);
+    document.getElementById("droughtLevel").textContent = data.drought_risk_level;
+    document.getElementById("droughtLevel").className = "level " + data.drought_risk_level;
+    document.getElementById("droughtBar").style.width = data.drought_risk_score + "%";
+
+    document.getElementById("advisoryText").textContent = data.advisory;
+
+    results.classList.add("visible");
+  } catch (e) {
+    status.textContent = "Couldn't reach the API — is app.py running on port 5000? (" + e.message + ")";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "GET RISK ADVISORY";
+  }
+}
+</script>
+</body>
+</html>
